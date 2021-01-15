@@ -20,25 +20,24 @@ type Address struct {
 }
 
 func getCustomer(db *sql.DB, id int) []Customer {
-
-	var stmtOut *sql.Rows
-	var err error
-
-	if id == 0 {
-		stmtOut, err = db.Query("SELECT * FROM customer INNER JOIN address ON customer.ID = address.customer_ID;")
-	} else {
-		stmtOut, err = db.Query("select * from customer inner join address on customer.ID=address.customer_ID where customer.ID=?", id)
+	query:="select * from customer inner join address on customer.ID=address.customer_ID where customer.ID"
+	//sql enjection
+	//sql placeholder
+	var Ids[] interface{}
+	if(id!=0){
+		query="select * from customer inner join address on customer.ID=address.customer_ID where customer.ID=?"
+		Ids=append(Ids,id)
 	}
-
+	rows,err:=db.Query(query,Ids...)
 	if err != nil {
 		panic(err.Error())
 	}
 	var result []Customer
-	defer stmtOut.Close()
-	for stmtOut.Next() {
+	defer rows.Close()
+	for rows.Next() {
 		var cust Customer
 
-		err = stmtOut.Scan(&cust.id, &cust.name, &cust.DOB, &cust.add.id, &cust.add.streetName, &cust.add.city, &cust.add.state, &cust.add.customerId)
+		err = rows.Scan(&cust.id, &cust.name, &cust.DOB, &cust.add.id, &cust.add.streetName, &cust.add.city, &cust.add.state, &cust.add.customerId)
 		if err != nil {
 			panic(err.Error())
 		}
